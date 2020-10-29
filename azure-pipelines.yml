@@ -1,0 +1,49 @@
+variables:
+  - name: imageTag
+    value: $(Build.BuildId)
+  - name: azureContainerRegistry
+    value: 'keboola-4338'
+  - name: imageRepository
+    value: 'python-spark-transformation'
+
+pr: none
+trigger:
+  # Build is triggered only in branches except master
+  # It servers for development, in Azure DevOps is configured Release pipeline triggered by change of base image
+  branches:
+    include: ['*']
+    exclude: ['master']
+
+jobs:
+  - job: Build
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+      - script: docker info
+        displayName: 'Info'
+
+      - task: Docker@2
+        inputs:
+          containerRegistry: $(azureContainerRegistry)
+          repository: $(imageRepository)
+          command: 'build'
+          tags: |
+            latest
+            $(imageTag)
+
+      - script: docker-compose build
+        displayName: 'Build docker-compose'
+
+      - script: docker-compose run --rm ci
+        displayName: 'Run tests'
+
+      - task: Docker@2
+        inputs:
+          containerRegistry: $(azureContainerRegistry)
+          repository: $(imageRepository)
+          command: 'push'
+          tags: |
+            latest
+            $(imageTag)
+        condition: eq(variables['isTaggedBuild'], 'true')
+        displayName: 'Push to ACR'

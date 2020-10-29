@@ -1,0 +1,15 @@
+version: '3'
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: keboola/python-spark-transformation
+    volumes:
+      - ./:/code
+
+  ci:
+    image: keboola/python-spark-transformation
+    command: composer ci
+    volumes:
+      - ./:/code
