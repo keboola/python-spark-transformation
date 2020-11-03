@@ -31,7 +31,7 @@ jobs:
             latest
             $(imageTag)
 
-      - script: docker-compose build
+      - script: docker-compose build dev
         displayName: 'Build docker-compose'
 
       - script: docker-compose run --rm ci

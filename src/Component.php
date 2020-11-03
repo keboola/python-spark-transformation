@@ -14,7 +14,6 @@ class Component extends BaseComponent
     public function __construct(LoggerInterface $logger)
     {
         parent::__construct($logger);
-
     }
 
     protected function run(): void

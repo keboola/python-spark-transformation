@@ -6,13 +6,13 @@
         "keboola/php-component": "^8.1"
     },
     "require-dev": {
-        "jakub-onderka/php-parallel-lint": "^1.0",
+        "ext-json": "*",
         "keboola/coding-standard": ">=9.0.0",
         "keboola/csv": "^2.1",
         "keboola/datadir-tests": "^4.0",
+        "php-parallel-lint/php-parallel-lint": "^1.2",
         "phpstan/phpstan": "^0.12.14",
-        "phpunit/phpunit": "^9.0.1",
-        "ext-json": "*"
+        "phpunit/phpunit": "^9.0.1"
     },
     "autoload": {
         "psr-4": {
