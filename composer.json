@@ -26,17 +26,17 @@
         }
     },
     "scripts": {
-        "tests-phpunit": "phpunit",
-        "tests-datadir": "phpunit tests/functional",
+        "tests-phpunit": "./vendor/bin/phpunit",
+        "tests-datadir": "./vendor/bin/phpunit tests/functional",
         "tests": [
             "@tests-phpunit",
             "@tests-datadir"
         ],
 
-        "phpstan": "phpstan analyse ./src ./tests --level=max --no-progress -c phpstan.neon",
-        "phpcs": "phpcs -n --ignore=vendor --extensions=php .",
-        "phpcbf": "phpcbf -n --ignore=vendor --extensions=php .",
-        "phplint": "parallel-lint -j 10 --exclude vendor .",
+        "phpstan": "./vendor/bin/phpstan analyse ./src ./tests --level=max --no-progress -c phpstan.neon",
+        "phpcs": "./vendor/bin/phpcs -n --ignore=vendor --extensions=php .",
+        "phpcbf": "./vendor/bin/phpcbf -n --ignore=vendor --extensions=php .",
+        "phplint": "./vendor/bin/parallel-lint -j 10 --exclude vendor .",
         "build": [
             "@phplint",
             "@phpcs",
