@@ -10,6 +10,6 @@ services:
 
   ci:
     image: keboola/python-spark-transformation
-    command: composer ci
+    command: bash -c "composer install && composer ci"
     volumes:
       - ./:/code
