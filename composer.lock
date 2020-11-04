@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ed221889d33c1860e58b41cb922186dd",
+    "content-hash": "2089f4011182d10987fa7353471cbcdc",
     "packages": [
         {
             "name": "keboola/common-exceptions",
@@ -934,19 +934,20 @@
         },
         {
             "name": "keboola/datadir-tests",
-            "version": "4.0.2",
+            "version": "5.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/datadir-tests.git",
-                "reference": "b01856c771760331b50a082f8b6cb2557632c5bc"
+                "reference": "9b2bf6d1495973e43b48a267469cb990dfe44520"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/datadir-tests/zipball/b01856c771760331b50a082f8b6cb2557632c5bc",
-                "reference": "b01856c771760331b50a082f8b6cb2557632c5bc",
+                "url": "https://api.github.com/repos/keboola/datadir-tests/zipball/9b2bf6d1495973e43b48a267469cb990dfe44520",
+                "reference": "9b2bf6d1495973e43b48a267469cb990dfe44520",
                 "shasum": ""
             },
             "require": {
+                "ext-json": "*",
                 "keboola/php-temp": "^2.0",
                 "php": "^7.3",
                 "phpunit/phpunit": "^9.0",
@@ -972,9 +973,9 @@
             "description": "Tool for functional testing of Keboola Connection components",
             "support": {
                 "issues": "https://github.com/keboola/datadir-tests/issues",
-                "source": "https://github.com/keboola/datadir-tests/tree/master"
+                "source": "https://github.com/keboola/datadir-tests/tree/5.2.0"
             },
-            "time": "2020-03-19T12:08:12+00:00"
+            "time": "2020-09-10T12:31:35+00:00"
         },
         {
             "name": "keboola/php-temp",
@@ -1537,16 +1538,16 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "0.12.52",
+            "version": "0.12.53",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "e96dd5e7ae9aefed663bc7e285ad96792b67eadc"
+                "reference": "dbbdb0d7c2434ecd5289f6114d16473e694caa67"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/e96dd5e7ae9aefed663bc7e285ad96792b67eadc",
-                "reference": "e96dd5e7ae9aefed663bc7e285ad96792b67eadc",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/dbbdb0d7c2434ecd5289f6114d16473e694caa67",
+                "reference": "dbbdb0d7c2434ecd5289f6114d16473e694caa67",
                 "shasum": ""
             },
             "require": {
@@ -1577,7 +1578,7 @@
             "description": "PHPStan - PHP Static Analysis Tool",
             "support": {
                 "issues": "https://github.com/phpstan/phpstan/issues",
-                "source": "https://github.com/phpstan/phpstan/tree/0.12.52"
+                "source": "https://github.com/phpstan/phpstan/tree/0.12.53"
             },
             "funding": [
                 {
@@ -1593,7 +1594,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-10-25T07:23:44+00:00"
+            "time": "2020-11-01T14:51:50+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
