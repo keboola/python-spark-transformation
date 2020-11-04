@@ -19,6 +19,9 @@ class Component extends BaseComponent
     protected function run(): void
     {
         $config = $this->getConfig();
+        $application = new SparkApplication($config, $this->getLogger());
+        $application->packageScript();
+        $application->run();
     }
 
     public function getConfig(): Config
