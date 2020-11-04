@@ -1,9 +1,12 @@
 {
     "require": {
         "php": "^7.4",
+        "ext-json": "*",
         "ext-mbstring": "*",
+        "guzzlehttp/guzzle": "~6.0",
         "keboola/common-exceptions": "^1.0",
-        "keboola/php-component": "^8.1"
+        "keboola/php-component": "^8.1",
+        "microsoft/azure-storage-blob": "^1.4"
     },
     "require-dev": {
         "ext-json": "*",
