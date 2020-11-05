@@ -36,9 +36,9 @@ class TransformationTest extends TestCase
                         ],
                     ],
                 ],
-            ]
+            ],
         ];
-        $runId = (string) rand(1,1000);
+        $runId = (string) rand(1, 1000);
         $app = new SparkApplication($configParameters, $imageParameters, new Logger());
         $app->setAppName('helloworld-' . $runId);
         $app->setJobName('transformation-test-' . $runId);

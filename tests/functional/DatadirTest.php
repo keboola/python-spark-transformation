@@ -22,6 +22,4 @@ class DatadirTest extends DatadirTestCase
         $this->datamechanicsUrl = (string) getenv('DATA_MECHANICS_URL');
         parent::setUp();
     }
-
-
 }

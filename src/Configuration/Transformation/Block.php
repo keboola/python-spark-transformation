@@ -29,4 +29,3 @@ class Block
         return $this->codes;
     }
 }
-

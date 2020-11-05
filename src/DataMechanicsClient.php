@@ -37,7 +37,7 @@ class DataMechanicsClient
             'userAgent' => self::DEFAULT_USER_AGENT,
             'headers' => [
                 'X-API-Key' => $dataMechanicsToken,
-            ]
+            ],
         ]);
     }
 
