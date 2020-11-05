@@ -4,20 +4,8 @@ declare(strict_types=1);
 
 namespace Keboola\PythonSparkTransformation;
 
-use Closure;
-use DateTime;
-use GuzzleHttp\Client as GuzzleClient;
-use GuzzleHttp\Exception\GuzzleException;
-use GuzzleHttp\HandlerStack;
-use GuzzleHttp\MessageFormatter;
-use GuzzleHttp\Middleware;
-use GuzzleHttp\Psr7\Request;
 use Keboola\Component\Logger;
-use Keboola\PythonSparkTransformation\Exception\UserException;
 use MicrosoftAzure\Storage\Blob\BlobRestProxy;
-use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Log\LoggerInterface;
 
 class SparkApplication
 {
