@@ -43,7 +43,7 @@ class DataMechanicsClient
 
     public function createApp(array $jobData): array
     {
-        $request = new Request('POST', 'apps', [], json_encode($jobData));
+        $request = new Request('POST', 'apps', [], \GuzzleHttp\json_encode($jobData));
         try {
             $response = $this->client->send($request);
             $data = json_decode($response->getBody()->getContents(), true, self::JSON_DEPTH, JSON_THROW_ON_ERROR);
@@ -80,7 +80,7 @@ class DataMechanicsClient
         if (isset($options['logger']) && $options['logger'] instanceof LoggerInterface) {
             $handlerStack->push(Middleware::log(
                 $options['logger'],
-                new MessageFormatter('[sandboxes-api] {method} {uri} : {code} {res_header_Content-Length}')
+                new MessageFormatter('[datamechanics-api] {method} {uri} : {code} {res_header_Content-Length}')
             ));
         }
         // finally create the instance

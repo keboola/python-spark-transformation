@@ -13,7 +13,7 @@ class Code
     public function __construct(array $data)
     {
         $this->name = $data['name'];
-        $this->scripts = array_map(fn(string $data) => new Script($data), $data['script']);
+        $this->scripts = $data['script'];
     }
 
     public function getName(): string

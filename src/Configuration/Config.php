@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Keboola\PythonSparkTransformation\Configuration;
 
 use Keboola\Component\Config\BaseConfig;
+use Keboola\PythonSparkTransformation\Exception\ApplicationException;
+use Keboola\PythonSparkTransformation\Transformation\Config\Block;
 
 class Config extends BaseConfig
 {

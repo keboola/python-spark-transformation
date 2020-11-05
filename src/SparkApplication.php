@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Keboola\PythonSparkTransformation;
 
-use Keboola\Component\Logger;
 use MicrosoftAzure\Storage\Blob\BlobRestProxy;
+use Psr\Log\LoggerInterface;
 
 class SparkApplication
 {
@@ -15,9 +15,11 @@ class SparkApplication
 
     private string $sasConnectionString;
 
+    private string $absContainer;
+
     private string $configurationTemplate;
 
-    private Logger $logger;
+    private LoggerInterface $logger;
 
     private string $appName;
 
@@ -29,9 +31,8 @@ class SparkApplication
 
     private string $sas;
 
-    public function __construct(array $configParameters, array $imageParameters, Logger $logger)
+    public function __construct(array $configParameters, array $imageParameters, LoggerInterface $logger)
     {
-        var_dump($imageParameters);
         $this->dataMechanicsUrl = $imageParameters['dataMechanicsUrl'];
         $this->dataMechanicsToken = $imageParameters['#dataMechanicsToken'];
         $this->configurationTemplate = $imageParameters['configurationTemplate'];
