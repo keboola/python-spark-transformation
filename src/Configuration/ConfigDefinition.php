@@ -13,7 +13,9 @@ class ConfigDefinition extends BaseConfigDefinition
     protected function getRootDefinition(TreeBuilder $treeBuilder): ArrayNodeDefinition
     {
         $rootNode = parent::getRootDefinition($treeBuilder);
-        $rootNode->children()->append($this->getAuthorizationDefinition());
+        // TODO: when the workspaces are ready
+        // $rootNode->children()->append($this->getAuthorizationDefinition());
+        $rootNode->children()->append($this->getParametersDefinition());
         return $rootNode;
     }
 
@@ -46,7 +48,6 @@ class ConfigDefinition extends BaseConfigDefinition
                             ->isRequired()
                         ->end();
         // @formatter:on
-
         return $authorizationNode;
     }
 
@@ -58,9 +59,6 @@ class ConfigDefinition extends BaseConfigDefinition
         $parametersNode
             ->isRequired()
             ->children()
-                ->integerNode('query_timeout')
-                    ->defaultValue(7200)
-                ->end()
                 ->arrayNode('blocks')
                     ->isRequired()
                     ->prototype('array')

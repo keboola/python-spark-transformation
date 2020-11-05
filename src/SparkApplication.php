@@ -1,5 +1,6 @@
 <?php
 
+declare(strict_types=1);
 
 namespace Keboola\PythonSparkTransformation;
 
@@ -11,34 +12,20 @@ use GuzzleHttp\HandlerStack;
 use GuzzleHttp\MessageFormatter;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Request;
-use JsonException;
 use Keboola\Component\Logger;
-use Keboola\PythonSparkTransformation\Configuration\Config;
-use Keboola\PythonSparkTransformation\Exception\ApplicationException;
 use Keboola\PythonSparkTransformation\Exception\UserException;
-use Keboola\PythonSparkTransformation\Transformation\Config\Code;
 use MicrosoftAzure\Storage\Blob\BlobRestProxy;
-use MicrosoftAzure\Storage\Blob\BlobSharedAccessSignatureHelper;
-use MicrosoftAzure\Storage\Common\Internal\Resources;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
 
 class SparkApplication
 {
-    private const DEFAULT_USER_AGENT = 'Internal DataMechanics API PHP Client';
-    private const DEFAULT_BACKOFF_RETRIES = 10;
-    private const JSON_DEPTH = 512;
-
-    private const SAS_WRITE_CONTAINER_PRIVILEGE = 'rwl';
-    private const SAS_READ_CONTAINER_PRIVILEGE = 'rl';
-    private const SAS_DEFAULT_EXPIRATION_HOURS = 12;
-
     private string $dataMechanicsUrl;
 
     private string $dataMechanicsToken;
 
-    private string $absConnectionString;
+    private string $sasConnectionString;
 
     private string $configurationTemplate;
 
@@ -48,27 +35,26 @@ class SparkApplication
 
     private string $jobName;
 
-    private Config $config;
+    private array $configParameters;
 
     private BlobRestProxy $blobClient;
 
-    private BlobSharedAccessSignatureHelper $sasHelper;
+    private string $sas;
 
-    public function __construct(Config $config, Logger $logger)
+    public function __construct(array $configParameters, array $imageParameters, Logger $logger)
     {
-        $imageParameters = $config->getImageParameters();
+        var_dump($imageParameters);
         $this->dataMechanicsUrl = $imageParameters['dataMechanicsUrl'];
         $this->dataMechanicsToken = $imageParameters['#dataMechanicsToken'];
         $this->configurationTemplate = $imageParameters['configurationTemplate'];
+        $this->sasConnectionString = $imageParameters['#sasConnectionString'];
+        $this->absContainer = $imageParameters['absContainer'];
+        $this->sas = $imageParameters['#sas'];
         $this->blobClient = BlobRestProxy::createBlobService(
-            $config->getParameters()['#absConnectionString']
-        );
-        $this->sasHelper = new BlobSharedAccessSignatureHelper(
-            $imageParameters['absAccountName'],
-            $imageParameters['absAccountKey']
+            $this->sasConnectionString
         );
         $this->logger = $logger;
-        $this->config = $config;
+        $this->configParameters = $configParameters;
     }
 
     public function setAppName(string $appName): self
@@ -84,7 +70,7 @@ class SparkApplication
 
     public function getFileName(): string
     {
-        return $this->appName . 'py';
+        return $this->appName . '.py';
     }
 
     public function setJobName(string $jobName): self
@@ -100,16 +86,15 @@ class SparkApplication
 
     public function packageScript(): void
     {
-        $blocks = $this->config->getBlocks();
+        $blocks = $this->configParameters['blocks'];
         $script = '';
         foreach ($blocks as $block) {
-            foreach ($block->getCodes() as $code) {
-                /** @var Code $code*/
-                $script .= implode("\n", $code->getScripts());
+            foreach ($block['codes'] as $code) {
+                $script .= implode("\n", $code['script']);
             }
         }
         $this->blobClient->createBlockBlob(
-            getenv('ABS_CONTAINER'),
+            $this->absContainer,
             $this->getFileName(),
             $script
         );
@@ -117,110 +102,36 @@ class SparkApplication
 
     private function generateLinkToScript(): string
     {
-        $expirationDate = (new DateTime())->modify('+' . self::SAS_DEFAULT_EXPIRATION_HOURS . 'hour');
-        $sas = $this->sasHelper->generateBlobServiceSharedAccessSignatureToken(
-            Resources::RESOURCE_TYPE_CONTAINER,
-            getenv('ABS_CONTAINER'),
-            self::SAS_WRITE_CONTAINER_PRIVILEGE,
-            $expirationDate,
-            (new DateTime())
-        );
-        $sasConnectionString = sprintf(
-            '%s=https://%s.%s;%s=%s',
-            Resources::BLOB_ENDPOINT_NAME,
-            $this->blobClient->getAccountName(),
-            Resources::BLOB_BASE_DNS_NAME,
-            Resources::SAS_TOKEN_NAME,
-            $sas
-        );
-
-        $blobClientWithSAS = BlobRestProxy::createBlobService(
-            $sasConnectionString
-        );
-
         return sprintf(
-            '%s%s?%s',
-            (string) $blobClientWithSAS->getPsrPrimaryUri(),
+            '%s%s/%s?%s',
+            str_replace('https', 'wasbs', (string) $this->blobClient->getPsrPrimaryUri()),
+            $this->absContainer,
             $this->getFileName(),
-            $sas
+            $this->sas
         );
     }
 
     public function run(): void
     {
         $scriptlink = $this->generateLinkToScript();
-        $dmClient = $this->initClient([
-            'apiUrl' => $this->dataMechanicsUrl . '/api/',
-            'logger' => $this->logger
-        ]);
-        $jobData = json_encode([
+        $dmClient = new DataMechanicsClient(
+            $this->dataMechanicsUrl,
+            $this->dataMechanicsToken,
+            $this->logger
+        );
+        $jobData = [
             'appName' => $this->getAppName(),
             'jobName' => $this->getJobName(),
             'configTemplateName' => $this->configurationTemplate,
             'configOverrides' => [
+                'type' => 'Python',
                 'mainApplicationFile' => $scriptlink,
+                'sparkConf' => [
+                    'spark.hadoop.fs.azure.account.auth.type' => 'SAS',
+                    'spark.hadoop.fs.azure.sas.token.provider.type' => 'com.microsoft.azure.servicebus.security.SharedAccessSignatureTokenProvider'
+                ],
             ],
-        ]);
-        $request = new Request('POST', 'apps', [], $jobData);
-        try {
-            $response = $dmClient->send($request);
-            $data = json_decode($response->getBody()->getContents(), true, self::JSON_DEPTH, JSON_THROW_ON_ERROR);
-            return $data ?: [];
-        } catch (GuzzleException $e) {
-            throw new UserException($e->getMessage(), $e->getCode(), $e);
-        }
-    }
-
-    protected function initClient(array $options = []): GuzzleClient
-    {
-        // Initialize handlers (start with those supplied in constructor)
-        if (isset($options['handler']) && $options['handler'] instanceof HandlerStack) {
-            $handlerStack = HandlerStack::create($options['handler']);
-        } else {
-            $handlerStack = HandlerStack::create();
-        }
-        // Set exponential backoff
-        $handlerStack->push(Middleware::retry($this->createDefaultDecider($options['backoffMaxTries'])));
-        // Set handler to set default headers
-        $handlerStack->push(Middleware::mapRequest(
-            function (RequestInterface $request) use ($options) {
-                $requestUpdated = $request
-                    ->withHeader('User-Agent', $options['userAgent'])
-                    ->withHeader('Content-type', 'application/json');
-                foreach ($options['headers'] as $key => $value) {
-                    $requestUpdated = $requestUpdated->withHeader($key, $value);
-                }
-                return $requestUpdated;
-            }
-        ));
-        // Set client logger
-        if (isset($options['logger']) && $options['logger'] instanceof LoggerInterface) {
-            $handlerStack->push(Middleware::log(
-                $options['logger'],
-                new MessageFormatter('[sandboxes-api] {method} {uri} : {code} {res_header_Content-Length}')
-            ));
-        }
-        // finally create the instance
-        return new GuzzleClient(['base_uri' => $options['apiUrl'], 'handler' => $handlerStack]);
-    }
-
-    protected function createDefaultDecider(int $maxRetries): Closure
-    {
-        return function (
-            $retries,
-            RequestInterface $request,
-            ?ResponseInterface $response = null,
-            $error = null
-        ) use ($maxRetries) {
-            if ($retries >= $maxRetries) {
-                return false;
-            } elseif ($response && $response->getStatusCode() >= 500) {
-                return true;
-            } elseif ($error) {
-                return true;
-            } else {
-                return false;
-            }
-        };
+        ];
+        $dmClient->createApp($jobData);
     }
 }
