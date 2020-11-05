@@ -126,10 +126,6 @@ class SparkApplication
             'configOverrides' => [
                 'type' => 'Python',
                 'mainApplicationFile' => $scriptlink,
-                'sparkConf' => [
-                    'spark.hadoop.fs.azure.account.auth.type' => 'SAS',
-                    'spark.hadoop.fs.azure.sas.token.provider.type' => 'com.microsoft.azure.servicebus.security.SharedAccessSignatureTokenProvider'
-                ],
             ],
         ];
         $dmClient->createApp($jobData);
