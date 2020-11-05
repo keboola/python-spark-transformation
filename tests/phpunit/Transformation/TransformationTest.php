@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Keboola\PythonSparkTransformation\Tests\PhpUnit\Transformation;
 
-use _HumbugBox5f65e914a905\Psr\Log\NullLogger;
 use Keboola\Component\Logger;
 use Keboola\PythonSparkTransformation\Configuration\Config;
+use Keboola\PythonSparkTransformation\Configuration\ConfigDefinition;
 use Keboola\PythonSparkTransformation\SparkApplication;
-use PHPUnit\Framework\Constraint\TraversableContainsIdentical;
 use \PHPUnit\Framework\TestCase;
 
 class TransformationTest extends TestCase
@@ -18,11 +17,10 @@ class TransformationTest extends TestCase
         $imageParameters = [
             'dataMechanicsUrl' => getenv('DATA_MECHANICS_URL'),
             '#dataMechanicsToken' => getenv('DATA_MECHANICS_TOKEN'),
-            '#absConnectionString' => getenv('ABS_SAS_CONNECTION_STRING'),
+            '#sasConnectionString' => getenv('ABS_SAS_CONNECTION_STRING'),
+            '#sas' => getenv('ABS_SAS'),
             'configurationTemplate' => getenv('DM_CONFIGURATION_TEMPLATE'),
             'absContainer' => getenv('ABS_CONTAINER'),
-            'absAccountName' => getenv('ABS_ACCOUNT_NAME'),
-            '#absAccountKey' => getenv('ABS_ACCOUNT_KEY'),
         ];
         $configParameters = [
             'blocks' => [
@@ -31,7 +29,7 @@ class TransformationTest extends TestCase
                     'codes' => [
                         [
                             'name' => 'first code',
-                            'scripts' => [
+                            'script' => [
                                 "print('hello world') \n",
                                 "print('goodbye world') \n",
                             ],
@@ -40,15 +38,10 @@ class TransformationTest extends TestCase
                 ],
             ]
         ];
-        $config = new Config([
-            'imageParameters' => $imageParameters,
-            'parameters' => $configParameters,
-            'storage' => [],
-        ]);
-
-        $app = new SparkApplication($config, new Logger());
-        $app->setAppName('helloworld');
-        $app->setJobName('transformation-test');
+        $runId = (string) rand(1,1000);
+        $app = new SparkApplication($configParameters, $imageParameters, new Logger());
+        $app->setAppName('helloworld-' . $runId);
+        $app->setJobName('transformation-test-' . $runId);
         $app->packageScript();
         $app->run();
     }
