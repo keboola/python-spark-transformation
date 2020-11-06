@@ -47,7 +47,6 @@ class DataMechanicsClient
         try {
             $response = $this->client->send($request);
             $data = json_decode($response->getBody()->getContents(), true, self::JSON_DEPTH, JSON_THROW_ON_ERROR);
-            var_dump($data);
             return $data ?: [];
         } catch (GuzzleException $e) {
             throw new UserException($e->getMessage(), $e->getCode(), $e);

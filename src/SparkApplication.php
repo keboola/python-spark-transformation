@@ -17,6 +17,8 @@ class SparkApplication
 
     private string $absContainer;
 
+    private string $absAccountName;
+
     private string $configurationTemplate;
 
     private LoggerInterface $logger;
@@ -38,6 +40,7 @@ class SparkApplication
         $this->configurationTemplate = $imageParameters['configurationTemplate'];
         $this->sasConnectionString = $imageParameters['#sasConnectionString'];
         $this->absContainer = $imageParameters['absContainer'];
+        $this->absAccountName = $imageParameters['absAccountName'];
         $this->sas = $imageParameters['#sas'];
         $this->blobClient = BlobRestProxy::createBlobService(
             $this->sasConnectionString
@@ -92,11 +95,10 @@ class SparkApplication
     private function generateLinkToScript(): string
     {
         return sprintf(
-            '%s%s/%s?%s',
-            str_replace('https', 'wasbs', (string) $this->blobClient->getPsrPrimaryUri()),
+            'wasbs://%s@%s.blob.core.windows.net/%s',
             $this->absContainer,
-            $this->getFileName(),
-            $this->sas
+            $this->absAccountName,
+            $this->getFileName()
         );
     }
 
@@ -108,6 +110,11 @@ class SparkApplication
             $this->dataMechanicsToken,
             $this->logger
         );
+        $sparkVar = sprintf(
+            "spark.hadoop.fs.azure.sas.%s.%s.blob.core.windows.net",
+            $this->absContainer,
+            $this->absAccountName
+        );
         $jobData = [
             'appName' => $this->getAppName(),
             'jobName' => $this->getJobName(),
@@ -115,6 +122,9 @@ class SparkApplication
             'configOverrides' => [
                 'type' => 'Python',
                 'mainApplicationFile' => $scriptlink,
+                'sparkConf' => [
+                    $sparkVar => $this->sas
+                ]
             ],
         ];
         $dmClient->createApp($jobData);
