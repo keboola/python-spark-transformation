@@ -21,6 +21,7 @@ class TransformationTest extends TestCase
             '#sas' => getenv('ABS_SAS'),
             'configurationTemplate' => getenv('DM_CONFIGURATION_TEMPLATE'),
             'absContainer' => getenv('ABS_CONTAINER'),
+            'absAccountName' => getenv('ABS_ACCOUNT_NAME'),
         ];
         $configParameters = [
             'blocks' => [

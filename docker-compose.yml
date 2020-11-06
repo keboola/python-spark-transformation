@@ -16,6 +16,7 @@ services:
       - ABS_SAS_CONNECTION_STRING
       - ABS_CONTAINER
       - ABS_SAS
+      - ABS_ACCOUNT_NAME
 
   ci:
     image: keboola/python-spark-transformation
