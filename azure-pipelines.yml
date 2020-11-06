@@ -34,7 +34,7 @@ jobs:
       - script: docker-compose build dev
         displayName: 'Build docker-compose'
 
-      - script: docker-compose run --rm ci
+      - script: docker-compose run -e DATA_MECHANICS_TOKEN -e DATA_MECHANICS_URL -e DM_CONFIGURATION_TEMPLATE -e ABS_SAS_CONNECTION_STRING -e ABS_CONTAINER -e ABS_SAS -e ABS_ACCOUNT_NAME --rm ci
         displayName: 'Run tests'
         env:
           DATA_MECHANICS_TOKEN: $(DATA_MECHANICS_TOKEN)
