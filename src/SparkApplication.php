@@ -111,7 +111,7 @@ class SparkApplication
             $this->logger
         );
         $sparkVar = sprintf(
-            "spark.hadoop.fs.azure.sas.%s.%s.blob.core.windows.net",
+            'spark.hadoop.fs.azure.sas.%s.%s.blob.core.windows.net',
             $this->absContainer,
             $this->absAccountName
         );
@@ -123,8 +123,8 @@ class SparkApplication
                 'type' => 'Python',
                 'mainApplicationFile' => $scriptlink,
                 'sparkConf' => [
-                    $sparkVar => $this->sas
-                ]
+                    $sparkVar => $this->sas,
+                ],
             ],
         ];
         $dmClient->createApp($jobData);
