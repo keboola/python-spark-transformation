@@ -36,6 +36,14 @@ jobs:
 
       - script: docker-compose run --rm ci
         displayName: 'Run tests'
+        env:
+          DATA_MECHANICS_TOKEN: $(DATA_MECHANICS_TOKEN)
+          DATA_MECHANICS_URL: $(DATA_MECHANICS_URL)
+          DM_CONFIGURATION_TEMPLATE: $(DM_CONFIGURATION_TEMPLATE)
+          ABS_SAS_CONNECTION_STRING: $(ABS_SAS_CONNECTION_STRING)
+          ABS_CONTAINER: $(ABS_CONTAINER)
+          ABS_SAS: $(ABS_SAS)
+          ABS_ACCOUNT_NAME: $(ABS_ACCOUNT_NAME)
 
       - task: Docker@2
         inputs:

@@ -1,15 +1,18 @@
 {
     "require": {
         "php": "^7.4",
+        "ext-json": "*",
         "ext-mbstring": "*",
+        "guzzlehttp/guzzle": "~6.0",
         "keboola/common-exceptions": "^1.0",
-        "keboola/php-component": "^8.1"
+        "keboola/php-component": "^8.1",
+        "microsoft/azure-storage-blob": "^1.4"
     },
     "require-dev": {
         "ext-json": "*",
         "keboola/coding-standard": ">=9.0.0",
         "keboola/csv": "^2.1",
-        "keboola/datadir-tests": "^4.0",
+        "keboola/datadir-tests": "^5.2",
         "php-parallel-lint/php-parallel-lint": "^1.2",
         "phpstan/phpstan": "^0.12.14",
         "phpunit/phpunit": "^9.0.1"

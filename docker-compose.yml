@@ -7,9 +7,29 @@ services:
     image: keboola/python-spark-transformation
     volumes:
       - ./:/code
+    environment:
+      - KBC_TOKEN
+      - DATA_MECHANICS_TOKEN
+      - DATA_MECHANICS_URL
+      - DM_CONFIGURATION_TEMPLATE
+      # the following are only temporary workarounds
+      - ABS_SAS_CONNECTION_STRING
+      - ABS_CONTAINER
+      - ABS_SAS
+      - ABS_ACCOUNT_NAME
 
   ci:
     image: keboola/python-spark-transformation
     command: bash -c "composer install && composer ci"
     volumes:
       - ./:/code
+    environment:
+      - KBC_TOKEN
+      - DATA_MECHANICS_TOKEN
+      - DATA_MECHANICS_URL
+      - DM_CONFIGURATION_TEMPLATE
+      # the following are only temporary workarounds
+      - ABS_SAS_CONNECTION_STRING
+      - ABS_CONTAINER
+      - ABS_SAS
+      - ABS_ACCOUNT_NAME

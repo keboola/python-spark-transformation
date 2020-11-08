@@ -5,21 +5,25 @@ declare(strict_types=1);
 namespace Keboola\PythonSparkTransformation\Configuration;
 
 use Keboola\Component\Config\BaseConfig;
+use Keboola\PythonSparkTransformation\Exception\ApplicationException;
+use Keboola\PythonSparkTransformation\Transformation\Config\Block;
 
 class Config extends BaseConfig
 {
-    public function getHost(): string
+    public function getRunId(): string
     {
-        return $this->getValue(['authorization', 'workspace', 'host']);
+        $runId = getenv('KBC_RUNID');
+        if (!$runId) {
+            throw new ApplicationException('KBC_RUNID environment variable must be set');
+        }
+        return $runId;
     }
 
-    public function getPort(): int
+    public function getBlocks(): array
     {
-        return $this->getValue(['authorization', 'workspace', 'port']);
-    }
-
-    public function getUser(): string
-    {
-        return $this->getValue(['authorization', 'workspace', 'user']);
+        return array_map(
+            fn(array $data) => new Block($data),
+            $this->getValue(['parameters', 'blocks'])
+        );
     }
 }

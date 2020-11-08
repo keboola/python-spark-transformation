@@ -1,0 +1,19 @@
+{
+  "parameters": {
+    "blocks": [
+      {
+        "name": "first block",
+        "codes": [
+          {
+            "name": "first code",
+            "script": [
+              "CREATE TABLE \"testout\" AS SELECT * FROM \"SIMPLE\"",
+              "UPDATE \"testout\" SET age = id"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "storage": {}
+}
