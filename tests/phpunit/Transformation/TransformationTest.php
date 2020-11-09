@@ -12,6 +12,22 @@ use \PHPUnit\Framework\TestCase;
 
 class TransformationTest extends TestCase
 {
+    private function generateTestScript(int $loopMax = 10, int $sleepInterval = 2): array
+    {
+        $testScript = [
+            "import time \n",
+            "print('starting') \n",
+        ];
+        $totalTimeSlept = 0;
+        for ($i = 0; $i <= $loopMax; $i++) {
+            $testScript[] = "time.sleep(" . $sleepInterval . ")";
+            $totalTimeSlept += $sleepInterval;
+            $testScript[] = "print('I have now slept for a total of $totalTimeSlept seconds') \n";
+        }
+        $testScript[] = "print('Test transformation completed') \n";
+        return $testScript;
+    }
+
     public function testTransformation(): void
     {
         $imageParameters = [
@@ -23,6 +39,7 @@ class TransformationTest extends TestCase
             'absContainer' => getenv('ABS_CONTAINER'),
             'absAccountName' => getenv('ABS_ACCOUNT_NAME'),
         ];
+
         $configParameters = [
             'blocks' => [
                 [
@@ -30,10 +47,7 @@ class TransformationTest extends TestCase
                     'codes' => [
                         [
                             'name' => 'first code',
-                            'script' => [
-                                "print('hello world') \n",
-                                "print('goodbye world') \n",
-                            ],
+                            'script' => $this->generateTestScript(10),
                         ],
                     ],
                 ],
@@ -41,7 +55,7 @@ class TransformationTest extends TestCase
         ];
         $runId = (string) rand(1, 1000);
         $app = new SparkApplication($configParameters, $imageParameters, new Logger());
-        $app->setAppName('helloworld-' . $runId);
+        $app->setAppName('transformation-test-' . $runId);
         $app->setJobName('transformation-test-' . $runId);
         $app->packageScript();
         $app->run();

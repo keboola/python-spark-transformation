@@ -128,5 +128,25 @@ class SparkApplication
             ],
         ];
         $dmClient->createApp($jobData);
+
+        $isProcessed = false;
+        $tries = 0;
+        // give it some base startup time before starting polling.
+        sleep(5);
+        while (!$isProcessed) {
+            $appDetails = $dmClient->getAppDetails($this->getAppName());
+            if ($appDetails['status']['isProcessed']) {
+                break;
+            }
+            $tries++;
+            $waitAmount = call_user_func_array($dmClient->appDetailsDelayMethod(), [$tries]);
+            sleep($waitAmount);
+        }
+        $metricsMessage = "Job metrics:\n";
+        foreach ($appDetails['metrics'] as $metric => $value) {
+            $metricsMessage .= "$metric : $value\n";
+        }
+        $this->logger->info('Spark job started at ' . $appDetails['status']['startedAt'] . ' and ended at ' . $appDetails['status']['startedAt']);
+        $this->logger->info($metricsMessage);
     }
 }

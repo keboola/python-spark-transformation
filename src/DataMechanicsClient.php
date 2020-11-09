@@ -20,7 +20,10 @@ use Psr\Log\LoggerInterface;
 class DataMechanicsClient
 {
     private const DEFAULT_USER_AGENT = 'Internal DataMechanics API PHP Client';
-    private const DEFAULT_BACKOFF_RETRIES = 1;
+    private const DEFAULT_BACKOFF_RETRIES = 5;
+    private const DEFAULT_MIN_WAIT = 5;
+    private const DEFAULT_MAX_WAIT = 60;
+    private const DEFAULT_EXPONENT = 1.1;
     private const JSON_DEPTH = 512;
 
     private Client $client;
@@ -30,7 +33,7 @@ class DataMechanicsClient
         string $dataMechanicsToken,
         LoggerInterface $logger
     ) {
-        $this->client = $this->initClient([
+        $this->client = $this->initClient(array_merge([
             'apiUrl' => $dataMechanicsUrl . '/api/',
             'logger' => $logger,
             'backoffMaxTries' => self::DEFAULT_BACKOFF_RETRIES,
@@ -38,7 +41,7 @@ class DataMechanicsClient
             'headers' => [
                 'X-API-Key' => $dataMechanicsToken,
             ],
-        ]);
+        ]));
     }
 
     private function sendRequest(Request $request): array
@@ -56,6 +59,13 @@ class DataMechanicsClient
     {
         $request = new Request('POST', 'apps', [], \GuzzleHttp\json_encode($jobData));
         return $this->sendRequest($request);
+    }
+
+    public function getAppDetails(string $appName): array
+    {
+        $request = new Request('GET', 'apps/' . $appName);
+        $response = $this->sendRequest($request);
+        return $response;
     }
 
     protected function initClient(array $options = []): GuzzleClient
@@ -108,6 +118,53 @@ class DataMechanicsClient
             } else {
                 return false;
             }
+        };
+    }
+
+    public static function appDetailsDecider(): Closure
+    {
+        return function (
+            $retries,
+            RequestInterface $request,
+            ?ResponseInterface $response = null,
+            $error = null
+        ): bool {
+            try {
+                $responseData = json_decode(
+                    $response->getBody()->getContents(),
+                    true,
+                    self::JSON_DEPTH,
+                    JSON_THROW_ON_ERROR
+                );
+                if ($responseData['status']['isProcessed']) {
+                    $response->getBody()->rewind();
+                    return true;
+                }
+                $response->getBody()->rewind();
+                return false;
+            } catch (\JsonException $e) {
+                $response->getBody()->rewind();
+                return false;
+            }
+        };
+    }
+
+    public function appDetailsDelayMethod(
+        int $minWait = self::DEFAULT_MIN_WAIT,
+        int $maxWait = self::DEFAULT_MAX_WAIT,
+        float $exp = self::DEFAULT_EXPONENT
+    ): Closure {
+        return function ($tries) use ($exp, $maxWait, $minWait): int {
+            // as default we start with a 5 seconds until the exponential surpasses this value,
+            // then we grow until max
+            $expDelay = pow($exp, $tries);
+            if ($expDelay < $minWait) {
+                return $minWait;
+            }
+            if ($expDelay > $maxWait) {
+                return $maxWait;
+            }
+            return intval($expDelay);
         };
     }
 }
