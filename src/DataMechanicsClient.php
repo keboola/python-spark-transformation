@@ -41,9 +41,8 @@ class DataMechanicsClient
         ]);
     }
 
-    public function createApp(array $jobData): array
+    private function sendRequest(Request $request): array
     {
-        $request = new Request('POST', 'apps', [], \GuzzleHttp\json_encode($jobData));
         try {
             $response = $this->client->send($request);
             $data = json_decode($response->getBody()->getContents(), true, self::JSON_DEPTH, JSON_THROW_ON_ERROR);
@@ -51,6 +50,12 @@ class DataMechanicsClient
         } catch (GuzzleException $e) {
             throw new UserException($e->getMessage(), $e->getCode(), $e);
         }
+    }
+
+    public function createApp(array $jobData): array
+    {
+        $request = new Request('POST', 'apps', [], \GuzzleHttp\json_encode($jobData));
+        return $this->sendRequest($request);
     }
 
     protected function initClient(array $options = []): GuzzleClient
