@@ -31,7 +31,7 @@ class DataMechanicsClient
     public function __construct(
         string $dataMechanicsUrl,
         string $dataMechanicsToken,
-        LoggerInterface $logger
+        ?LoggerInterface $logger = null
     ) {
         $this->client = $this->initClient(array_merge([
             'apiUrl' => $dataMechanicsUrl . '/api/',
@@ -64,8 +64,13 @@ class DataMechanicsClient
     public function getAppDetails(string $appName): array
     {
         $request = new Request('GET', 'apps/' . $appName);
-        $response = $this->sendRequest($request);
-        return $response;
+        return $this->sendRequest($request);
+    }
+
+    public function getLiveLogs(string $appName): ResponseInterface
+    {
+        $request = new Request('GET', 'apps/' . $appName . '/live/driver-log');
+        return $this->client->send($request);
     }
 
     protected function initClient(array $options = []): GuzzleClient

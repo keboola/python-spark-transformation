@@ -24,7 +24,6 @@ class Component extends BaseComponent
             $config->getImageParameters(),
             $this->getLogger()
         );
-        $application->packageScript();
         $application->run();
     }
 

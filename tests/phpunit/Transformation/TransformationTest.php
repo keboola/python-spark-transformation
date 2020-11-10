@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace Keboola\PythonSparkTransformation\Tests\PhpUnit\Transformation;
 
 use Keboola\Component\Logger;
-use Keboola\PythonSparkTransformation\Configuration\Config;
-use Keboola\PythonSparkTransformation\Configuration\ConfigDefinition;
 use Keboola\PythonSparkTransformation\SparkApplication;
 use \PHPUnit\Framework\TestCase;
 
 class TransformationTest extends TestCase
 {
-    private function generateTestScript(int $loopMax = 10, int $sleepInterval = 2): array
+    private function generateTestScript(int $loopMax = 10, int $sleepInterval = 3): array
     {
         $testScript = [
             "import time \n",
@@ -47,7 +45,7 @@ class TransformationTest extends TestCase
                     'codes' => [
                         [
                             'name' => 'first code',
-                            'script' => $this->generateTestScript(10),
+                            'script' => $this->generateTestScript(),
                         ],
                     ],
                 ],
@@ -57,7 +55,6 @@ class TransformationTest extends TestCase
         $app = new SparkApplication($configParameters, $imageParameters, new Logger());
         $app->setAppName('transformation-test-' . $runId);
         $app->setJobName('transformation-test-' . $runId);
-        $app->packageScript();
         $app->run();
     }
 }
