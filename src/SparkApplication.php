@@ -108,7 +108,7 @@ class SparkApplication
         }
         $this->logger->info(
             'Spark job started at ' . $appDetails['status']['startedAt'] .
-            ' and ended at ' . $appDetails['status']['startedAt']
+            ' and ended at ' . $appDetails['status']['endedAt']
         );
         $this->logger->info($metricsMessage);
     }
