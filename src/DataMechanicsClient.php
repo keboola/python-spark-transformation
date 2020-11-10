@@ -20,7 +20,10 @@ use Psr\Log\LoggerInterface;
 class DataMechanicsClient
 {
     private const DEFAULT_USER_AGENT = 'Internal DataMechanics API PHP Client';
-    private const DEFAULT_BACKOFF_RETRIES = 1;
+    private const DEFAULT_BACKOFF_RETRIES = 5;
+    private const DEFAULT_MIN_WAIT = 5;
+    private const DEFAULT_MAX_WAIT = 60;
+    private const DEFAULT_EXPONENT = 1.1;
     private const JSON_DEPTH = 512;
 
     private Client $client;
@@ -28,9 +31,9 @@ class DataMechanicsClient
     public function __construct(
         string $dataMechanicsUrl,
         string $dataMechanicsToken,
-        LoggerInterface $logger
+        ?LoggerInterface $logger = null
     ) {
-        $this->client = $this->initClient([
+        $this->client = $this->initClient(array_merge([
             'apiUrl' => $dataMechanicsUrl . '/api/',
             'logger' => $logger,
             'backoffMaxTries' => self::DEFAULT_BACKOFF_RETRIES,
@@ -38,12 +41,11 @@ class DataMechanicsClient
             'headers' => [
                 'X-API-Key' => $dataMechanicsToken,
             ],
-        ]);
+        ]));
     }
 
-    public function createApp(array $jobData): array
+    private function sendRequest(Request $request): array
     {
-        $request = new Request('POST', 'apps', [], \GuzzleHttp\json_encode($jobData));
         try {
             $response = $this->client->send($request);
             $data = json_decode($response->getBody()->getContents(), true, self::JSON_DEPTH, JSON_THROW_ON_ERROR);
@@ -51,6 +53,24 @@ class DataMechanicsClient
         } catch (GuzzleException $e) {
             throw new UserException($e->getMessage(), $e->getCode(), $e);
         }
+    }
+
+    public function createApp(array $jobData): array
+    {
+        $request = new Request('POST', 'apps', [], \GuzzleHttp\json_encode($jobData));
+        return $this->sendRequest($request);
+    }
+
+    public function getAppDetails(string $appName): array
+    {
+        $request = new Request('GET', 'apps/' . $appName);
+        return $this->sendRequest($request);
+    }
+
+    public function getLiveLogs(string $appName): ResponseInterface
+    {
+        $request = new Request('GET', 'apps/' . $appName . '/live/driver-log');
+        return $this->client->send($request);
     }
 
     protected function initClient(array $options = []): GuzzleClient
@@ -103,6 +123,25 @@ class DataMechanicsClient
             } else {
                 return false;
             }
+        };
+    }
+
+    public function appDetailsDelayMethod(
+        int $minWait = self::DEFAULT_MIN_WAIT,
+        int $maxWait = self::DEFAULT_MAX_WAIT,
+        float $exp = self::DEFAULT_EXPONENT
+    ): Closure {
+        return function ($tries) use ($exp, $maxWait, $minWait): int {
+            // as default we start with a 5 seconds until the exponential surpasses this value,
+            // then we grow until max
+            $expDelay = pow($exp, $tries);
+            if ($expDelay < $minWait) {
+                return $minWait;
+            }
+            if ($expDelay > $maxWait) {
+                return $maxWait;
+            }
+            return intval($expDelay);
         };
     }
 }
