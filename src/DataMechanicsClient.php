@@ -126,34 +126,6 @@ class DataMechanicsClient
         };
     }
 
-    public static function appDetailsDecider(): Closure
-    {
-        return function (
-            $retries,
-            RequestInterface $request,
-            ?ResponseInterface $response = null,
-            $error = null
-        ): bool {
-            try {
-                $responseData = json_decode(
-                    $response->getBody()->getContents(),
-                    true,
-                    self::JSON_DEPTH,
-                    JSON_THROW_ON_ERROR
-                );
-                if ($responseData['status']['isProcessed']) {
-                    $response->getBody()->rewind();
-                    return true;
-                }
-                $response->getBody()->rewind();
-                return false;
-            } catch (\JsonException $e) {
-                $response->getBody()->rewind();
-                return false;
-            }
-        };
-    }
-
     public function appDetailsDelayMethod(
         int $minWait = self::DEFAULT_MIN_WAIT,
         int $maxWait = self::DEFAULT_MAX_WAIT,

@@ -18,7 +18,7 @@ class TransformationTest extends TestCase
         ];
         $totalTimeSlept = 0;
         for ($i = 0; $i <= $loopMax; $i++) {
-            $testScript[] = "time.sleep(" . $sleepInterval . ")";
+            $testScript[] = 'time.sleep(' . $sleepInterval . ')';
             $totalTimeSlept += $sleepInterval;
             $testScript[] = "print('I have now slept for a total of $totalTimeSlept seconds') \n";
         }

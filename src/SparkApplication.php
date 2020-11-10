@@ -6,13 +6,14 @@ namespace Keboola\PythonSparkTransformation;
 
 use GuzzleHttp\Psr7\Response;
 use MicrosoftAzure\Storage\Blob\BlobRestProxy;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
 
 class SparkApplication
 {
     public const SPARK_COMPLETED_STATE = 'COMPLETED';
 
-    public const LOG_CHUNK_SIZE = '1024';
+    public const LOG_CHUNK_SIZE = 1024;
 
     private string $dataMechanicsUrl;
 
@@ -95,7 +96,7 @@ class SparkApplication
 
         // create the DM application
         $appDetails = $this->createApplication();
-        $this->logger->info("Registered spark application " . $this->appName);
+        $this->logger->info('Registered spark application ' . $this->appName);
 
         // wait for the application to finish
         $appDetails = $this->waitForCompletion();
@@ -105,7 +106,10 @@ class SparkApplication
         foreach ($appDetails['metrics'] as $metric => $value) {
             $metricsMessage .= "$metric : $value\n";
         }
-        $this->logger->info('Spark job started at ' . $appDetails['status']['startedAt'] . ' and ended at ' . $appDetails['status']['startedAt']);
+        $this->logger->info(
+            'Spark job started at ' . $appDetails['status']['startedAt'] .
+            ' and ended at ' . $appDetails['status']['startedAt']
+        );
         $this->logger->info($metricsMessage);
     }
 
@@ -177,14 +181,13 @@ class SparkApplication
                     $polingClient->getLiveLogs($this->appName)
                 );
                 $processedLogs = true;
-                $this->logger->info("Job completed, cleaning up");
+                $this->logger->info('Job completed, cleaning up');
             }
             if ($appDetails['status']['isProcessed']) {
-                $this->logger->info(json_encode($appDetails['status']));
-                break;
+                $isProcessed = true;
             }
             $tries++;
-            $this->logger->info(json_encode($appDetails['status']));
+            $this->logger->info((string)json_encode($appDetails['status']));
             // $dmClient->getLiveLogs($this->appName);
             $waitAmount = call_user_func_array($polingClient->appDetailsDelayMethod(), [$tries]);
             $totalWaitTime += $waitAmount;
@@ -193,7 +196,7 @@ class SparkApplication
         return $appDetails;
     }
 
-    private function processLogResponse(Response $response): void
+    private function processLogResponse(ResponseInterface $response): void
     {
         while (!$response->getBody()->eof()) {
             $this->logger->info($response->getBody()->read(self::LOG_CHUNK_SIZE));
