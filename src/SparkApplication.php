@@ -187,8 +187,7 @@ class SparkApplication
                 $isProcessed = true;
             }
             $tries++;
-            $this->logger->info((string)json_encode($appDetails['status']));
-            // $dmClient->getLiveLogs($this->appName);
+            $this->logger->info((string) json_encode($appDetails['status']));
             $waitAmount = call_user_func_array($polingClient->appDetailsDelayMethod(), [$tries]);
             $totalWaitTime += $waitAmount;
             sleep($waitAmount);
